@@ -273,3 +273,7 @@ class OpenSeaFloorHistoryQuery(OpenSeaRequest):
         else:
             self.variables['startDate'] = date
         return self
+
+    def count(self, numberOfResponses: int):
+        self.variables['pageSize'] = numberOfResponses
+        return self

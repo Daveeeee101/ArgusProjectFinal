@@ -14,7 +14,8 @@ import Logging
 
 async def main():
     async with OpenseaSession() as sess:
-        out = await sess.sendEventPollHistoryRequest(OpenSeaEventHistoryPollQuery().collections(['cryptopunks']))
+        request = OpenSeaEventHistoryPollQuery().collections(['cryptopunks']).count(1)
+        out = await sess.sendRequest(request)
         print(out)
 
 

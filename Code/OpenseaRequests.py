@@ -206,7 +206,7 @@ class OpenSeaSelectAssetQuery(OpenSeaRequest):
 
 
 class OpenSeaCollectionActivityQuery(OpenSeaRequest):
-    """Request class """
+    """Request class for getting the activities from a collection - not 100% sure what this does yet"""
 
     def __init__(self):
         super().__init__()

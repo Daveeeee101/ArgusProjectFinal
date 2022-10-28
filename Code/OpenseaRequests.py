@@ -2,6 +2,7 @@ from typing import Dict
 from typing import List
 import ujson
 from datetime import datetime
+from typing import Union
 
 
 class RequestTooLargeException(Exception):
@@ -245,4 +246,27 @@ class OpenSeaPriceHistoryQuery(OpenSeaRequest):
 
     def startDate(self, date: datetime):
         self.variables['startDate'] = date.isoformat()
+        return self
+
+
+class OpenSeaPriceHistoryQuery(OpenSeaRequest):
+    """Class for getting the price history for a collection"""
+
+    def __init__(self):
+        super().__init__()
+        self.name = "PriceHistoryGraphV2Query"
+        self.setBody()
+        self.setHeader()
+        self.variables = {'collections': []}
+
+    def collection(self, slug: str):
+        """Set the collection to get the price history from"""
+        self.variables['collectionSlug'] = slug
+        return self
+
+    def startDate(self, date: Union[datetime, str]):
+        if type(date) == datetime:
+            self.variables['startDate'] = date.isoformat()
+        else:
+            self.variables['startDate'] = date
         return self

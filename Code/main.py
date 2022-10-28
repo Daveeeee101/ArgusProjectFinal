@@ -15,7 +15,7 @@ import Logging
 
 async def main():
     async with OpenseaSession() as sess:
-        request = OpenSeaPriceHistoryQuery().collection('cryptopunks')
+        request = OpenSeaPriceHistoryQuery().collection('cryptopunks').startDate("2017-06-26T00:00:00+00:00")
         out = await sess.sendRequest(request)
         print(out)
 

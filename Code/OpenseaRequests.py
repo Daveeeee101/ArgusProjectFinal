@@ -237,7 +237,7 @@ class OpenSeaPriceHistoryQuery(OpenSeaRequest):
         self.name = "PriceHistoryGraphV2Query"
         self.setBody()
         self.setHeader()
-        self.variables = {'collections': []}
+        self.variables = {}
 
     def collection(self, slug: str):
         """Set the collection to get the price history from"""
@@ -249,18 +249,18 @@ class OpenSeaPriceHistoryQuery(OpenSeaRequest):
         return self
 
 
-class OpenSeaPriceHistoryQuery(OpenSeaRequest):
+class OpenSeaFloorHistoryQuery(OpenSeaRequest):
     """Class for getting the price history for a collection"""
 
     def __init__(self):
         super().__init__()
-        self.name = "PriceHistoryGraphV2Query"
+        self.name = "FloorPriceHistoryChartQuery"
         self.setBody()
         self.setHeader()
-        self.variables = {'collections': []}
+        self.variables = {'pageSize': 5000}
 
     def collection(self, slug: str):
-        """Set the collection to get the price history from"""
+        """Set the collection to get the floor history from"""
         self.variables['collectionSlug'] = slug
         return self
 

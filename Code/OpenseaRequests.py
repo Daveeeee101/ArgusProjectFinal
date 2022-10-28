@@ -24,7 +24,7 @@ class EventTypes:
     @staticmethod
     def values():
         return ['AUCTION_SUCCESSFUL', 'AUCTION_CREATED', 'AUCTION_CANCELLED', 'ASSET_APPROVE', 'ASSET_TRANSFER'
-                , 'BULK_CANCEL', 'OFFER_ENTERED']
+            , 'BULK_CANCEL', 'OFFER_ENTERED']
 
 
 class InferredEventTypes:
@@ -228,3 +228,21 @@ class OpenSeaCollectionActivityQuery(OpenSeaRequest):
         return self
 
 
+class OpenSeaPriceHistoryQuery(OpenSeaRequest):
+    """Class for getting the price history for a collection"""
+
+    def __init__(self):
+        super().__init__()
+        self.name = "PriceHistoryGraphV2Query"
+        self.setBody()
+        self.setHeader()
+        self.variables = {'collections': []}
+
+    def collection(self, slug: str):
+        """Set the collection to get the price history from"""
+        self.variables['collectionSlug'] = slug
+        return self
+
+    def startDate(self, date: datetime):
+        self.variables['startDate'] = date.isoformat()
+        return self

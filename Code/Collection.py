@@ -1,3 +1,4 @@
+from datetime import datetime
 from OpenSeaDataClasses import OpenSeaCollection
 from OpenSeaDataClasses import OpenSeaAsset
 from OpenSeaDataClasses import OpenSeaEvent
@@ -11,6 +12,7 @@ class Collection:
         self.data: OpenSeaCollection = data
         self.assetsListed: Set[OpenSeaAsset] = assetsListed
         self.eventsHistory: List[OpenSeaEvent] = []
+        self.lastUpdated: datetime = datetime.now()
 
     def __hash__(self):
         return hash(self.data)

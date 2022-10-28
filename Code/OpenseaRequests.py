@@ -244,8 +244,11 @@ class OpenSeaPriceHistoryQuery(OpenSeaRequest):
         self.variables['collectionSlug'] = slug
         return self
 
-    def startDate(self, date: datetime):
-        self.variables['startDate'] = date.isoformat()
+    def startDate(self, date: Union[datetime, str]):
+        if type(date) == datetime:
+            self.variables['startDate'] = date.isoformat()
+        else:
+            self.variables['startDate'] = date
         return self
 
 

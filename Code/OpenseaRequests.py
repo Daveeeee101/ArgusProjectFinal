@@ -144,7 +144,7 @@ class OpenSeaOrdersQuery(OpenSeaRequest):
         self.name = "OrdersQuery"
         self.setBody()
         self.setHeader()
-        self.variables = {'count': 32, 'expandedMode': True}
+        self.variables = {'count': 32, 'expandedMode': True, 'isExpired': True, 'isBid': False}
 
     def collections(self, collSlugs: List[str]):
         """sets the collections that orders should be chosen from (use collection slugs)"""
@@ -161,6 +161,10 @@ class OpenSeaOrdersQuery(OpenSeaRequest):
     def nft(self, tokenId: int, contractAddress: str):
         """sets the specific asset that should be queried for orders using the contract address and tokenId"""
         self.variables['makerArchetype'] = {'assetContractAddress': contractAddress, 'tokenId': tokenId}
+        return self
+
+    def includeExpired(self, choice: bool):
+        self.variables['isExpired'] = choice
         return self
 
 

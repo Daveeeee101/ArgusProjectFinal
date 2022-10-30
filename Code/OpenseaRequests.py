@@ -151,6 +151,18 @@ class OpenSeaOrdersQuery(OpenSeaRequest):
         self.variables['takerAssetCollections'] = collSlugs
         return self
 
+    def count(self, numberOfResponses: int):
+        """Sets the number of orders that should be obtained - max 32"""
+        if numberOfResponses > 32:
+            raise RequestTooLargeException(numberOfResponses, 32)
+        self.variables['count'] = numberOfResponses
+        return self
+
+    def nft(self, tokenId: int, contractAddress: str):
+        """sets the specific asset that should be queried for orders using the contract address and tokenId"""
+        self.variables['makerArchetype'] = {'assetContractAddress': contractAddress, 'tokenId': tokenId}
+        return self
+
 
 class OpenSeaAssetQuery(OpenSeaRequest):
     """Request class for requesting asset details (i.e NFTs) from opensea"""

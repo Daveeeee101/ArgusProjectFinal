@@ -2,8 +2,8 @@ import ujson
 from typing import List
 from datetime import datetime
 import datetime
-from OpenseaRequests import EventTypes
-from OpenSeaDataClasses import *
+from Code.OpenseaRequests import EventTypes
+from Code.OpenSeaDataClasses import *
 
 
 class OpenseaResponse:
@@ -83,8 +83,8 @@ class OpenseaEventHistoryPollResponse(OpenseaResponse):
             eventTypeOut = EventTypes.SUCCESSFUL
             try:
                 priceDetails = node['perUnitPrice']
-                priceEth = priceDetails['eth']
-                priceUSD = priceDetails['usd']
+                priceEth = float(priceDetails['eth'])
+                priceUSD = float(priceDetails['usd'])
             except (TypeError, ValueError):
                 raise NodeConversionException(reason=f"could not get user details", nodeCode=node)
             try:

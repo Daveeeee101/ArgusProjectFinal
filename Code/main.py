@@ -24,15 +24,10 @@ from OpenSeaManager import OpenSeaManager
 
 
 async def main():
-    collection = "leostudio-vip"
-    async with OpenSeaManager() as manager:
-        manager.addNewCollectionTestMethod(collection)
-        while True:
-            print("looping...")
-            await asyncio.sleep(5)
-            events = await manager.getEventsSinceLastQuery()
-            for ev in map(lambda event: event.data, events):
-                print(ev)
+    collection = "otherdeed"
+    async with OpenseaSession() as sess:
+        out = await sess.sendRequest(OpenSeaEventHistoryPollQuery().eventTypes([EventTypes.CREATED, EventTypes.SUCCESSFUL, EventTypes.CANCELLED]).collections([collection]).count(1))
+        print(out)
 
 if __name__ == '__main__':
     asyncio.run(main())

@@ -235,9 +235,16 @@ class OpenSeaAssetQuery(OpenSeaRequest):
         self.variables['collections'] = collections
         return self
 
-    def sortBy(self, sort: str):
+    def sortBy(self, sort: AssetSort):
         """sets the way assets should be sorted"""
         self.variables['sortBy'] = sort
+        return self
+
+    def count(self, numberOfResponses: int):
+        """Sets the number of orders that should be obtained - max 32"""
+        if numberOfResponses > 32:
+            raise RequestTooLargeException(numberOfResponses, 32)
+        self.variables['count'] = numberOfResponses
         return self
 
 

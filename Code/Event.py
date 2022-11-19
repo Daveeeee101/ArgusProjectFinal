@@ -13,3 +13,5 @@ class Event:
 
     def __eq__(self, other):
         return other.data == self.data
+
+

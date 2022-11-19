@@ -3,6 +3,7 @@ from typing import List
 from datetime import datetime
 import datetime
 from OpenseaRequests import EventTypes
+from OpenSeaDataClasses import *
 
 
 class OpenseaResponse:
@@ -44,10 +45,12 @@ class OpenseaEventHistoryPollResponse(OpenseaResponse):
         return self.jsonFormat['data']['assetEvents']['edges']
 
     @staticmethod
-    def nodeToEvent(node):
+    def nodeToEvent(node) -> OpenSeaEvent:
         try:
             collInfo = node['collection']
             slug = collInfo['slug']
+            collName = collInfo['name']
+            collRelayId = collInfo['id']
         except (TypeError, ValueError):
             raise NodeConversionException(reason="could not get collection info", nodeCode=node)
         try:
@@ -55,16 +58,80 @@ class OpenseaEventHistoryPollResponse(OpenseaResponse):
         except (TypeError, ValueError):
             raise NodeConversionException(reason=f"cannot convert timestamp", nodeCode=node)
         eventType = node['eventType']
-        if eventType not in EventTypes.values():
-            raise NodeConversionException(reason=f"event type not expected = {eventType}", nodeCode=node)
-        try:
-            sellerInfo = node['fromAccount']
-            addressLink = sellerInfo['address']
-        except (TypeError, ValueError):
-            raise NodeConversionException(reason=f"could not get user details", nodeCode=node)
+        if eventType == 'CREATED' or eventType == 'CANCELLED':
+            toAccount = None
+            if eventType == 'CREATED':
+                eventTypeOut = EventTypes.CREATED
+                try:
+                    priceDetails = node['perUnitPrice']
+                    priceEth = priceDetails['eth']
+                    priceUSD = priceDetails['usd']
+                except (TypeError, ValueError):
+                    raise NodeConversionException(reason=f"could not get user details", nodeCode=node)
+            else:
+                eventTypeOut = EventTypes.CANCELLED
+                priceEth = None
+                priceUSD = None
+            try:
+                sellerInfo = node['seller']
+                sellerAddressLink = sellerInfo['address']
+                sellerRelayId = sellerInfo['id']
+            except (TypeError, ValueError):
+                """THIS HAPPENS WHEN THERE IS AN OFFER BEING CANCELLED"""
+                return None
+        elif eventType == 'SUCCESSFUL':
+            eventTypeOut = EventTypes.SUCCESSFUL
+            try:
+                priceDetails = node['perUnitPrice']
+                priceEth = priceDetails['eth']
+                priceUSD = priceDetails['usd']
+            except (TypeError, ValueError):
+                raise NodeConversionException(reason=f"could not get user details", nodeCode=node)
+            try:
+                sellerInfo = node['seller']
+                sellerAddressLink = sellerInfo['address']
+                sellerRelayId = sellerInfo['id']
+            except (TypeError, ValueError):
+                raise NodeConversionException(reason=f"could not get user seller details", nodeCode=node)
+            try:
+                buyerInfo = node['winnerAccount']
+                buyerAddressLink = buyerInfo['address']
+                buyerRelayId = buyerInfo['id']
+                toAccount = OpenSeaAccount(address=buyerAddressLink, relayId=buyerRelayId)
+            except (TypeError, ValueError):
+                raise NodeConversionException(reason=f"could not get user buyer details", nodeCode=node)
 
-    def toEventList(self):
-        return [self.nodeToEvent(node) for node in self]
+        else:
+            raise NodeConversionException(reason=f"Unsupported event type", nodeCode=node)
+        try:
+            assetInfo = node['item']
+            assetName = assetInfo['name']
+            tokenId = int(assetInfo['tokenId'])
+            address = assetInfo['assetContract']['address']
+            assetRelay = assetInfo['id']
+        except (TypeError, ValueError):
+            raise NodeConversionException(reason=f"could not get asset details", nodeCode=node)
+        try:
+            eventRelay = node['id']
+        except (TypeError, ValueError):
+            raise NodeConversionException(reason=f"could not get relayId details", nodeCode=node)
+
+        return OpenSeaEvent(timestamp=timestamp,
+                            fromAccount=OpenSeaAccount(sellerAddressLink, sellerRelayId),
+                            asset=OpenSeaAsset(name=assetName,
+                                               contractAddress=address,
+                                               collection=OpenSeaCollection(slug, collName, collRelayId),
+                                               tokenId=tokenId,
+                                               relayId=assetRelay),
+                            type=eventTypeOut,
+                            relayId=eventRelay,
+                            toAccount=toAccount,
+                            priceEth=priceEth,
+                            priceUSD=priceUSD,
+                            )
+
+    def toOpenSeaEventList(self) -> List[OpenSeaEvent]:
+        return [self.nodeToEvent(node) for node in self if self.nodeToEvent(node) is not None]
 
 
 class OpenSeaOrderResponse(OpenseaResponse):
@@ -83,5 +150,3 @@ class OpenSeaOrderActivityResponse(OpenseaResponse):
 
     def strip(self):
         return self.jsonFormat['data']['collectionItems']['edges']
-
-

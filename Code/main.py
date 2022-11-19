@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import time
+
 from OpenseaSession import OpenseaSession
 from OpenseaRequests import EventTypes
 from OpenseaRequests import OpenSeaEventHistoryPollQuery
@@ -12,20 +14,25 @@ from OpenseaRequests import OpenSeaCollectionActivityQuery
 from OpenseaRequests import OpenSeaPriceHistoryQuery
 from OpenseaRequests import OpenSeaFloorHistoryQuery
 import Logging
+from OpenseaRequests import OpenSeaInactiveOrders
+from OpenseaRequests import OpenSeaManagerOrders
+from OpenseaRequests import CancelOrdersBulk
+from OpenseaRequests import BulkPurchaseQuery
+from OpenseaRequests import AssetSort
+from OpenseaResponse import NodeConversionException
+from OpenSeaManager import OpenSeaManager
 
 
 async def main():
-    nftAddress = "0x495f947276749ce646f68ac8c248420045cb7b5e"
-    tokenId = 105459361334571136243493281122501276861891817147204613658540988352430499430401
-    async with OpenseaSession() as sess:
-        request1 = OpenSeaEventHistoryPollQuery().eventTypes(EventTypes.CREATED).nft(tokenId, nftAddress).count(10)
-        out1 = await sess.sendEventPollHistoryRequest(request1)
-        request2 = OpenSeaOrdersQuery().nft(tokenId, nftAddress).count(10)
-        out2 = await sess.sendOrderRequest(request2)
-        print(out1)
-        print("\n")
-        print(out2)
-
+    collection = "leostudio-vip"
+    async with OpenSeaManager() as manager:
+        manager.addNewCollectionTestMethod(collection)
+        while True:
+            print("looping...")
+            await asyncio.sleep(5)
+            events = await manager.getEventsSinceLastQuery()
+            for ev in map(lambda event: event.data, events):
+                print(ev)
 
 if __name__ == '__main__':
     asyncio.run(main())

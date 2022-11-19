@@ -24,8 +24,8 @@ class EventTypes:
 
     @staticmethod
     def values():
-        return ['AUCTION_SUCCESSFUL', 'AUCTION_CREATED', 'AUCTION_CANCELLED', 'ASSET_APPROVE', 'ASSET_TRANSFER'
-            , 'BULK_CANCEL', 'OFFER_ENTERED']
+        return {'AUCTION_SUCCESSFUL', 'AUCTION_CREATED', 'AUCTION_CANCELLED', 'ASSET_APPROVE', 'ASSET_TRANSFER',
+                'BULK_CANCEL', 'OFFER_ENTERED'}
 
 
 class InferredEventTypes:
@@ -33,11 +33,11 @@ class InferredEventTypes:
     LISTED = 'LISTED'
     DELISTED = 'DELISTED'
     RELISTED = 'RELISTED'
-    LISTING_CANCELLED = 'LISTING_CANCELLED'
+    INVALID = 'INVALID'
 
     @staticmethod
     def values():
-        return ['SOLD, LISTED', 'DELISTED', 'RELISTED', 'LISTING_CANCELLED']
+        return {'SOLD', 'LISTED', 'DELISTED', 'RELISTED', 'INVALID'}
 
 
 class Chains:
@@ -47,6 +47,16 @@ class Chains:
     @staticmethod
     def values():
         return ['ETHEREUM', 'SOLANA']
+
+class AssetSort:
+    SALE_DATE = 'LAST_SALE_DATE'
+    SALE_PRICE = 'LAST_SALE_PRICE'
+    LISTING_DATE = 'LISTING_DATE'
+    PRICE = 'PRICE'
+
+    @staticmethod
+    def values():
+        return ['LAST_SALE_DATE', 'LAST_SALE_PRICE', 'LISTING_DATE', 'PRICE']
 
 
 class OpenSeaRequest:
@@ -144,7 +154,8 @@ class OpenSeaOrdersQuery(OpenSeaRequest):
         self.name = "OrdersQuery"
         self.setBody()
         self.setHeader()
-        self.variables = {'count': 32, 'expandedMode': True, 'isExpired': True, 'isBid': False}
+        self.variables = {'count': 32, 'expandedMode': True, 'isExpired': True, 'isBid': False,
+                          'includeCriteriaOrders': True}
 
     def collections(self, collSlugs: List[str]):
         """sets the collections that orders should be chosen from (use collection slugs)"""
@@ -161,11 +172,52 @@ class OpenSeaOrdersQuery(OpenSeaRequest):
     def nft(self, tokenId: int, contractAddress: str):
         """sets the specific asset that should be queried for orders using the contract address and tokenId"""
         self.variables['makerArchetype'] = {'assetContractAddress': contractAddress, 'tokenId': tokenId}
+        #self.variables['takerArchetype'] = {'assetContractAddress': contractAddress, 'tokenId': tokenId}
+        return self
+
+    def owner(self, address: str):
+        self.variables['maker'] = {"address": address}
         return self
 
     def includeExpired(self, choice: bool):
         self.variables['isExpired'] = choice
         return self
+
+
+class OpenSeaInactiveOrders(OpenSeaRequest):
+
+    def __init__(self):
+        super().__init__()
+        self.name = "OrderListInactiveListingsQuery"
+        self.setBody()
+        self.setHeader()
+        self.variables = {'count': 32, 'assets': ['QXNzZXRUeXBlOjU2OTAwNzkwNA=='], 'toAddress': '0xD68271879Bd3d957432AF5D1b8a6687584c217AA'}
+
+
+class OpenSeaManagerOrders(OpenSeaRequest):
+
+    def __init__(self):
+        super().__init__()
+        self.name = "OrderManagerQuery"
+        self.setBody()
+        self.setHeader()
+        self.variables = {'assetId': 'QXNzZXRUeXBlOjU2OTAwNzkwNA==', 'isBundle': False}
+
+    def nft(self, tokenId: int, contractAddress: str):
+        """sets the specific asset that should be queried for orders using the contract address and tokenId"""
+        self.variables['archetype'] = {'assetContractAddress': contractAddress, 'tokenId': tokenId}
+        #self.variables['takerArchetype'] = {'assetContractAddress': contractAddress, 'tokenId': tokenId}
+        return self
+
+
+class ActivitySearchQuery(OpenSeaRequest):
+
+    def __init__(self):
+        super().__init__()
+        self.name = "ActivitySearchQuery"
+        self.setBody()
+        self.setHeader()
+        self.variables = {}
 
 
 class OpenSeaAssetQuery(OpenSeaRequest):
@@ -176,11 +228,16 @@ class OpenSeaAssetQuery(OpenSeaRequest):
         self.name = "AssetSearchCollectionQuery"
         self.setBody()
         self.setHeader()
-        self.variables = {'count': 32}
+        self.variables = {'count': 32, 'showContextMenu': True}
 
     def collections(self, collections: List[str]):
         """sets the collections that asset details should be retrieved from. (use collection slug)"""
         self.variables['collections'] = collections
+        return self
+
+    def sortBy(self, sort: str):
+        """sets the way assets should be sorted"""
+        self.variables['sortBy'] = sort
         return self
 
 
@@ -293,3 +350,32 @@ class OpenSeaFloorHistoryQuery(OpenSeaRequest):
     def count(self, numberOfResponses: int):
         self.variables['pageSize'] = numberOfResponses
         return self
+
+
+class CancelOrdersBulk(OpenSeaRequest):
+
+    def __init__(self):
+        super().__init__()
+        self.name = "BulkCancelOrdersQuery"
+        self.setBody()
+        self.setHeader()
+        self.variables = {}
+
+    def address(self, address: str):
+        self.variables['address'] = address
+        return self
+
+
+class BulkPurchaseQuery(OpenSeaRequest):
+
+    def __init__(self):
+        super().__init__()
+        self.name = "BulkPurchaseActionModalQuery"
+        self.setBody()
+        self.setHeader()
+        self.variables = {'ordersToFill': {}}
+
+    def address(self, address: str):
+        self.variables['address'] = address
+        return self
+

@@ -33,7 +33,13 @@ class OpenSeaEvent:
     fromAccount: OpenSeaAccount
     asset: OpenSeaAsset
     type: EventTypes
+    relayId: str
     toAccount: OpenSeaAccount = None
+    priceEth: float = None
+    priceUSD: float = None
 
     def __le__(self, other):
         return self.timestamp < other.timestamp
+
+    def getCollectionInfo(self) -> OpenSeaCollection:
+        return self.asset.collection
